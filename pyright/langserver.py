@@ -17,17 +17,17 @@ def run(
     **kwargs: Any,
 ) -> subprocess.CompletedProcess[bytes] | subprocess.CompletedProcess[str]:
     pkg_dir = install_pyright(args, quiet=True)
-    binary = pkg_dir / 'langserver.index.js'
+    binary = pkg_dir / "langserver.index.js"
     if not binary.exists():
-        raise RuntimeError(f'Expected language server entrypoint: {binary} to exist')
+        raise RuntimeError(f"Expected language server entrypoint: {binary} to exist")
 
     # TODO: remove `--`?
-    return node.run('node', str(binary), '--', *args, **kwargs)
+    return node.run("node", str(binary), "--", *args, **kwargs)
 
 
 def entrypoint() -> NoReturn:
     sys.exit(main(*sys.argv[1:]))
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     entrypoint()

@@ -8,8 +8,8 @@ from ._utils import install_pyright
 
 
 __all__ = (
-    'run',
-    'main',
+    "run",
+    "main",
 )
 
 log: logging.Logger = logging.getLogger(__name__)
@@ -21,13 +21,26 @@ def main(args: List[str], **kwargs: Any) -> int:
 
 def run(
     *args: str, **kwargs: Any
-) -> Union['subprocess.CompletedProcess[bytes]', 'subprocess.CompletedProcess[str]']:
+) -> Union["subprocess.CompletedProcess[bytes]", "subprocess.CompletedProcess[str]"]:
     pkg_dir = install_pyright(args, quiet=None)
-    script = pkg_dir / 'index.js'
+    script = pkg_dir / "index.js"
     if not script.exists():
-        raise RuntimeError(f'Expected CLI entrypoint: {script} to exist')
+        raise RuntimeError(f"Expected CLI entrypoint: {script} to exist")
 
-    return node.run('node', str(script), *args, **kwargs)
+    import os
+
+    VENV = os.environ.get("VIRTUAL_ENV", None)
+    deleted = False
+    if VENV is not None:
+        pathes = os.environ["PATH"].split(":")
+        if pathes[0] == os.path.join(VENV, "bin"):
+            deleted = True
+            os.environ["PATH"] = ":".join(pathes[1:])
+
+    output = node.run("node", str(script), *args, **kwargs)
+    if deleted and VENV is not None:
+        os.environ["PATH"] = ":".join([os.path.join(VENV, "bin")] + pathes)
+    return output
 
 
 def entrypoint() -> NoReturn:
